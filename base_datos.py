@@ -53,4 +53,3 @@ def eliminar_palabra(palabra):
     c.execute('DELETE FROM palabras WHERE palabra = ?', (palabra,))
     conn.commit()
     conn.close()
-
