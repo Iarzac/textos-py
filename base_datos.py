@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 
 def inicializar_bd():
     conn = sqlite3.connect('palabras.db')
@@ -7,6 +8,13 @@ def inicializar_bd():
         CREATE TABLE IF NOT EXISTS palabras (
             categoria TEXT,
             palabra TEXT UNIQUE
+        )
+    ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS textos_generados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            texto TEXT,
+            timestamp TEXT
         )
     ''')
     palabras_predefinidas = [
@@ -33,23 +41,20 @@ def inicializar_bd():
     conn.commit()
     conn.close()
 
-def agregar_palabra(categoria, palabra):
+def agregar_texto_generado(texto):
     conn = sqlite3.connect('palabras.db')
     c = conn.cursor()
-    try:
-        c.execute('''
-            INSERT INTO palabras (categoria, palabra) VALUES (?, ?)
-        ''', (categoria, palabra))
-        conn.commit()
-        conn.close()
-        return True
-    except sqlite3.IntegrityError:
-        conn.close()
-        return False
-
-def eliminar_palabra(palabra):
-    conn = sqlite3.connect('palabras.db')
-    c = conn.cursor()
-    c.execute('DELETE FROM palabras WHERE palabra = ?', (palabra,))
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute('''
+        INSERT INTO textos_generados (texto, timestamp) VALUES (?, ?)
+    ''', (texto, timestamp))
     conn.commit()
     conn.close()
+
+def obtener_historial_textos():
+    conn = sqlite3.connect('palabras.db')
+    c = conn.cursor()
+    c.execute('SELECT texto, timestamp FROM textos_generados ORDER BY timestamp DESC')
+    historial = c.fetchall()
+    conn.close()
+    return historial
